@@ -18,8 +18,8 @@ function onRecord(record)
 	return json.encode {
 		op = op,
 		ts_ms = peerdb.Now().unix_milli,
-		before = json.encode(record.old),
-		after = json.encode(record.new),
+		before = record.old,
+		after = record.new,
 		source = {
 			version = "PeerDB",
 			to_ms = record.commit_time.unix_milli,
