@@ -1,19 +1,13 @@
 local msgpack = require 'msgpack'
 
 local function RowToMap(row)
-	local cols = peerdb.RowColumns(row)
-	local map = {}
-	for _, col in ipairs(cols) do
+	local map = peerdb.RowTable(row)
+	for col, val in pairs(map) do
 		local kind = peerdb.RowColumnKind(row, col)
-		if string.sub(kind, 1, #'array_') == 'array_' then
-			map[col] = msgpack.array(row[col])
-		elseif kind == 'numeric' then
-			local dec = row[col]
-			map[col] = msgpack.ext(10, msgpack.encode(dec.exponent) .. dec.coefficient.bytes)
+		if kind == 'numeric' then
+			map[col] = msgpack.ext(10, msgpack.encode(val.exponent) .. val.coefficient.bytes)
 		elseif kind == 'bytes' or kind == 'bit' then
-			map[col] = msgpack.bin(row[col])
-		else
-			map[col] = row[col]
+			map[col] = msgpack.bin(val)
 		end
 	end
 	return map
@@ -31,7 +25,7 @@ function onRecord(r)
 		return
 	end
 	local record = {
-		action = r.kind,
+		action = kind,
 		lsn = r.checkpoint,
 		time = r.commit_time,
 		source = r.source,
